@@ -7,7 +7,7 @@ AF_Wave card;
 File f;
 Wavefile wave;      // only one!
 
-#define redled 9
+#define REED 6
 
 uint16_t samplerate;
 
@@ -22,7 +22,7 @@ void setup() {
   pinMode(3, OUTPUT);
   pinMode(4, OUTPUT);
   pinMode(5, OUTPUT);
-  pinMode(redled, OUTPUT);
+  pinMode(REED, INPUT);
   
   if (!card.init_card()) {
     putstring_nl("Card init. failed!"); return;
@@ -94,9 +94,23 @@ void playcomplete(char *name) {
 	delay(500);
         samplerate += delta;
         Serial.println(samplerate, DEC);
-        wave.setSampleRate(samplerate);
+        wave.setSampleRate(samplerate);  // sets it now
+        wave.dwSamplesPerSec = samplerate;  // sets it for restart
         if (samplerate <= MINSPEED || samplerate >= MAXSPEED) {
           delta = -delta;
+        }
+        int magnet = digitalRead(REED);
+        Serial.println(magnet, DEC);
+        if (magnet == 1) {
+          wave.stop();
+          while (1) {
+             delay(500);
+             magnet = digitalRead(REED);
+             if (magnet == 0) {
+               wave.play();
+               break;
+             }
+          }
         }
    }
   card.close_file(f);
