@@ -11,6 +11,9 @@ Wavefile wave;      // only one!
 
 uint16_t samplerate;
 
+#define MAXSPEED 29000
+#define MINSPEED 17000
+
 void setup() {
   Serial.begin(9600);           // set up Serial library at 9600 bps
   Serial.println("Wave test!");
@@ -84,10 +87,17 @@ void playcomplete(char *name) {
   uint32_t newsamplerate;
   
   playfile(name);
-  samplerate = wave.dwSamplesPerSec;
+  samplerate = MAXSPEED;
+  uint32_t delta = -100;
   while (wave.isplaying) {     
 	// you can do stuff here!
 	delay(500);
+        samplerate += delta;
+        Serial.println(samplerate, DEC);
+        wave.setSampleRate(samplerate);
+        if (samplerate <= MINSPEED || samplerate >= MAXSPEED) {
+          delta = -delta;
+        }
    }
   card.close_file(f);
 }
@@ -100,6 +110,7 @@ void playfile(char *name) {
    if (!wave.create(f)) {
      putstring_nl(" Not a valid WAV"); return;
    }
+   wave.dwSamplesPerSec = MAXSPEED;
    // ok time to play!
    wave.play();
 }
