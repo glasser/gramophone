@@ -11,8 +11,9 @@ dir_t dirBuf;     // buffer for directory reads
 
 #define REED 6
 
-#define MAXSPEED 29000
-#define MINSPEED 17000
+// An approximate number of times to run a loop such that, if we haven't
+// transitioned in that many times, we are not spinning.
+#define SPINNING_CYCLES 10000
 
 #define error(msg) error_P(PSTR(msg))
 
@@ -136,32 +137,31 @@ void play(FatReader &dir)
   }
 }
 
-void playinteractive() {
-  uint16_t samplerate = MAXSPEED;
-  wave.dwSamplesPerSec = MAXSPEED;
-  wave.play();                       // make some noise!
+int prev_magnet, cur_magnet, prev_spinning, cur_spinning, spin_count;
 
-  uint32_t delta = -100;
+void playinteractive() {
+  wave.play();
+  wave.pause();
+
+  prev_spinning = 0;
   while (wave.isplaying) {
-    // you can do stuff here!
-    delay(500);
-    samplerate += delta;
-    Serial.println(samplerate, DEC);
-    wave.setSampleRate(samplerate);
-    if (samplerate <= MINSPEED || samplerate >= MAXSPEED) {
-      delta = -delta;
+    prev_magnet = digitalRead(REED);
+    // Assume it is not spinning.
+    cur_spinning = 0;
+    for (spin_count = 0; spin_count < SPINNING_CYCLES; ++spin_count) {
+      cur_magnet = digitalRead(REED);
+      if (prev_magnet != cur_magnet) {
+        // Hey look, it is spinning.
+        cur_spinning = 1;
+        break;
+      }
     }
-    int magnet = digitalRead(REED);
-    Serial.println(magnet, DEC);
-    if (magnet == 1) {
-      wave.pause();
-      while (1) {
-        delay(500);
-        magnet = digitalRead(REED);
-        if (magnet == 0) {
-          wave.resume();
-          break;
-        }
+    if (cur_spinning != prev_spinning) {
+      prev_spinning = cur_spinning;
+      if (cur_spinning) {
+        wave.resume();
+      } else {
+        wave.pause();
       }
     }
   }
