@@ -1,46 +1,34 @@
 #define REED 6
 
-#define SAMPLES 50
+// An approximate number of times to run a loop such that, if we haven't
+// transitioned in that many times, we are not spinning.
+#define SPINNING_CYCLES 10000
 
 #define error(msg) error_P(PSTR(msg))
+
+int prev_magnet, cur_magnet, prev_spinning, cur_spinning, i;
 
 void setup() {
   Serial.begin(9600);           // set up Serial library at 9600 bps
   Serial.println("Magnet Test!");
   pinMode(REED, INPUT);
+  prev_spinning = 0;
 }
 
-uint32_t samples[SAMPLES];
-uint32_t overflow[SAMPLES];
-int values[SAMPLES];
-uint16_t i;
-int last, current;
-
 void loop() {
-  current = digitalRead(REED);
-  for (i = 0; i < SAMPLES; ++i) {
-    samples[i] = 0;
-    overflow[i] = 0;
-    values[i] = current;
-    while (1) {
-      last = current;
-      current = digitalRead(REED);
-      if (last == current) {
-        ++samples[i];
-        if (samples[i] == 10000000) {
-          ++overflow[i];
-        }
-      } else {
-        break;
-      }
+  prev_magnet = digitalRead(REED);
+  // Assume it is not spinning.
+  cur_spinning = 0;
+  for (i = 0; i < SPINNING_CYCLES; ++i) {
+    cur_magnet = digitalRead(REED);
+    if (prev_magnet != cur_magnet) {
+      // Hey look, it is spinning.
+      cur_spinning = 1;
+      break;
     }
   }
-  for (i = 0; i < SAMPLES; ++i) {
-    Serial.print(samples[i], DEC);
-    Serial.print(", ");
-    Serial.print(overflow[i], DEC);
-    Serial.print(", value: ");
-    Serial.println(values[i], DEC);
+  if (cur_spinning != prev_spinning) {
+    prev_spinning = cur_spinning;
+    Serial.println(cur_spinning ? "spinning!" : "stopped!");
   }
-  while (1) {}
 }
