@@ -14,3 +14,12 @@ So far:
   or 1: they're for serial communication! Or 13: it's got an LED!
 
 - Reed switch yay.
+
+- Hall effect sensor is more sturdy than reed switch. It's also more complex:
+  needs a magnet in the opposite direction to turn it off.  When looking at the
+  label, pins are from left to right POWER, GROUND, OUT.  Note that the HES
+  operates by pulling down, so we need a pull-up resistor on its output, not a
+  pull-down like we'd been doing with the reed switch.  Attached RED = POWER,
+  BLACK = GROUND, YELLOW = OUT.
+
+
