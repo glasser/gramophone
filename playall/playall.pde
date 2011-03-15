@@ -159,8 +159,10 @@ void playinteractive() {
     if (cur_spinning != prev_spinning) {
       prev_spinning = cur_spinning;
       if (cur_spinning) {
+        putstring("Resuming\n");
         wave.resume();
       } else {
+        putstring("Pausing\n");
         wave.pause();
       }
     }
