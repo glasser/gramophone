@@ -13,7 +13,7 @@ dir_t dirBuf;     // buffer for directory reads
 
 // An approximate number of times to run a loop such that, if we haven't
 // transitioned in that many times, we are not spinning.
-#define SPINNING_CYCLES 10000
+#define SPINNING_CYCLES 20000
 
 #define error(msg) error_P(PSTR(msg))
 
@@ -137,7 +137,7 @@ void play(FatReader &dir)
   }
 }
 
-int prev_magnet, cur_magnet, prev_spinning, cur_spinning, spin_count;
+int prev_magnet, cur_magnet, prev_spinning, cur_spinning, spin_count, period;
 
 void playinteractive() {
   wave.play();
@@ -148,13 +148,31 @@ void playinteractive() {
     prev_magnet = digitalRead(REED);
     // Assume it is not spinning.
     cur_spinning = 0;
-    for (spin_count = 0; spin_count < SPINNING_CYCLES; ++spin_count) {
+    period = 0;
+    for (spin_count = 1; spin_count < SPINNING_CYCLES; ++spin_count) {
       cur_magnet = digitalRead(REED);
-      if (prev_magnet != cur_magnet) {
-        // Hey look, it is spinning.
-        cur_spinning = 1;
-        break;
+      if (cur_spinning == 0) {
+        if (prev_magnet != cur_magnet) {
+          // Hey look, it is spinning.
+          cur_spinning = 1;
+          period = -spin_count;  // intermediate value
+        }
+      } else {
+        if (prev_magnet == cur_magnet) {
+          // It's back to the first value. We have our period!
+          period += spin_count;
+          break;
+        }
       }
+    }
+    if (period < 0) {
+      // This means we saw a change exactly once. Who knows what
+      // that means. Let's not think very hard: back to the top of the loop.
+      continue;
+    }
+    if (period > 0) {
+      putstring("Period: ");
+      Serial.println(period, DEC);
     }
     if (cur_spinning != prev_spinning) {
       prev_spinning = cur_spinning;
