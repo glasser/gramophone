@@ -137,13 +137,15 @@ void play(FatReader &dir)
   }
 }
 
-int prev_magnet, cur_magnet, prev_spinning, cur_spinning, spin_count, period;
+int prev_magnet, cur_magnet, prev_spinning, cur_spinning, spin_count, period,
+  prev_rate, cur_rate;
 
 void playinteractive() {
   wave.play();
   wave.pause();
 
   prev_spinning = 0;
+  prev_rate = 0;
   while (wave.isplaying) {
     prev_magnet = digitalRead(REED);
     // Assume it is not spinning.
@@ -170,10 +172,33 @@ void playinteractive() {
       // that means. Let's not think very hard: back to the top of the loop.
       continue;
     }
-    if (period > 0) {
-      putstring("Period: ");
-      Serial.println(period, DEC);
+    /* if (period > 0) { */
+    /*   putstring("Period: "); */
+    /*   Serial.println(period, DEC); */
+    /* } */
+    if (cur_spinning) {
+      if (period < 2100) {
+        cur_rate = 22050;  // This is the "normal" rate of the song.
+      } else if (period < 2500) {
+        cur_rate = 21000;
+      } else if (period < 3000) {
+        cur_rate = 20000;
+      } else if (period < 4000) {
+        cur_rate = 19000;
+      } else if (period < 6000) {
+        cur_rate = 18000;
+      } else {
+        cur_rate = 17000;
+      }
+
+      if (cur_rate != prev_rate) {
+        putstring("Rate: ");
+        Serial.println(cur_rate, DEC);
+        wave.setSampleRate(cur_rate);
+        prev_rate = cur_rate;
+      }
     }
+
     if (cur_spinning != prev_spinning) {
       prev_spinning = cur_spinning;
       if (cur_spinning) {

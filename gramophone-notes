@@ -23,3 +23,9 @@ So far:
   BLACK = GROUND, YELLOW = OUT.
 
 
+compress = 1
+channels = 1
+sampleRate = 00005622 = 22050
+bytepersecond = 00005622 = 22050
+blockalign = 1
+bitspersample = 8
