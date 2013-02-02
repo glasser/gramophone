@@ -17,19 +17,27 @@
  * along with the Arduino WaveHC Library.  If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#include "wiring.h"
-#include "SdReader.h"
+#if ARDUINO < 100
+#include <WProgram.h>
+#else  // ARDUINO < 100
+#include <Arduino.h>
+#endif  // ARDUINO < 100
+#include <SdReader.h>
 #include <WavePinDefs.h>
 //------------------------------------------------------------------------------
 // inline SPI functions
-/** Set Slave Select high */
-inline void spiSSHigh(void) {digitalWrite(SS, HIGH);}
-/** Set Slave Select low */
-inline void spiSSLow(void) {digitalWrite(SS, LOW);}
 /** Send a byte to the card */
 inline void spiSend(uint8_t b) {SPDR = b; while(!(SPSR & (1 << SPIF)));}
 /** Receive a byte from the card */
 inline uint8_t spiRec(void) {spiSend(0XFF); return SPDR;}
+/** Set Slave Select high */
+inline void spiSSHigh(void) {
+  digitalWrite(SS, HIGH);
+  // insure SD data out is high Z
+  spiSend(0XFF);
+}
+/** Set Slave Select low */
+inline void spiSSLow(void) {digitalWrite(SS, LOW);}
 //------------------------------------------------------------------------------
 // card status
 /** status for card in the ready state */
@@ -48,8 +56,7 @@ inline uint8_t spiRec(void) {spiSend(0XFF); return SPDR;}
 #define DATA_RES_WRITE_ERROR  0X0D
 //------------------------------------------------------------------------------
 // send command to card
-uint8_t SdReader::cardCommand(uint8_t cmd, uint32_t arg)
-{
+uint8_t SdReader::cardCommand(uint8_t cmd, uint32_t arg) {
   uint8_t r1;
   
   // end read if in partialBlockRead mode
@@ -83,8 +90,7 @@ uint8_t SdReader::cardCommand(uint8_t cmd, uint32_t arg)
  * Determine the size of an SD flash memory card.
  * \return The number of 512 byte data blocks in the card
  */ 
-uint32_t SdReader::cardSize(void)
-{
+uint32_t SdReader::cardSize(void) {
   csd_t csd;
   if (!readCSD(csd)) return false;
   if (csd.v1.csd_ver == 0) {
@@ -118,19 +124,23 @@ uint32_t SdReader::cardSize(void)
  * the value zero, false, is returned for failure. 
  *
  */  
-uint8_t SdReader::init(uint8_t slow)
-{
+uint8_t SdReader::init(uint8_t slow) {
   uint8_t ocr[4];
   uint8_t r;
   
   pinMode(SS, OUTPUT);
-  spiSSHigh();
+  digitalWrite(SS, HIGH);
   pinMode(MOSI, OUTPUT);
   pinMode(MISO_PIN, INPUT);
   pinMode(SCK, OUTPUT);
   
+#if SPI_INIT_SLOW
   // Enable SPI, Master, clock rate f_osc/128
   SPCR = (1 << SPE) | (1 << MSTR) | (1 << SPR1) | (1 << SPR0);
+#else  // SPI_INIT_SLOW
+  // Enable SPI, Master, clock rate f_osc/64
+  SPCR = (1 << SPE) | (1 << MSTR) | (1 << SPR1);
+#endif  // SPI_INIT_SLOW
   
   // must supply min of 74 clock cycles with CS high.
   for (uint8_t i = 0; i < 10; i++) spiSend(0XFF);
@@ -208,8 +218,7 @@ uint8_t SdReader::init(uint8_t slow)
  * the value zero, false, is returned for failure.      
  */
 uint8_t SdReader::readData(uint32_t block,
-                           uint16_t offset, uint8_t *dst, uint16_t count)
-{
+                           uint16_t offset, uint8_t *dst, uint16_t count) {
   if (count == 0) return true;
   if ((count + offset) > 512) {
     return false;
@@ -256,8 +265,7 @@ uint8_t SdReader::readData(uint32_t block,
 }
 //------------------------------------------------------------------------------
 /** Skip remaining data in a block when in partial block read mode. */
-void SdReader::readEnd(void)
-{
+void SdReader::readEnd(void) {
   if (inBlock_) {
     // skip data and crc
     SPDR = 0XFF;
@@ -273,8 +281,7 @@ void SdReader::readEnd(void)
 }
 //------------------------------------------------------------------------------
 /** read CID or CSR register */
-uint8_t SdReader::readRegister(uint8_t cmd, uint8_t *dst)
-{
+uint8_t SdReader::readRegister(uint8_t cmd, uint8_t *dst) {
   if (cardCommand(cmd, 0)) {
     error(SD_CARD_ERROR_READ_REG);
     return false;
@@ -292,8 +299,7 @@ uint8_t SdReader::readRegister(uint8_t cmd, uint8_t *dst)
 }
 //------------------------------------------------------------------------------
 // wait for card to go not busy
-uint8_t SdReader::waitNotBusy(uint16_t timeoutMillis)
-{
+uint8_t SdReader::waitNotBusy(uint16_t timeoutMillis) {
   uint16_t t0 = millis();
   while (spiRec() != 0XFF) {
     if (((uint16_t)millis() - t0) > timeoutMillis) return false;
@@ -302,8 +308,7 @@ uint8_t SdReader::waitNotBusy(uint16_t timeoutMillis)
 }
 //------------------------------------------------------------------------------
 /** Wait for start block token */
-uint8_t SdReader::waitStartBlock(void)
-{
+uint8_t SdReader::waitStartBlock(void) {
   uint8_t r;
   uint16_t t0 = millis();
   while ((r = spiRec()) == 0XFF) {

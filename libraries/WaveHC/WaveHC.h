@@ -4,7 +4,7 @@
 */
 #ifndef WaveHC_h
 #define WaveHC_h
-#include "FatReader.h"
+#include <FatReader.h>
 /**
  * \file
  * WaveHC class

@@ -19,8 +19,8 @@
  */
 #ifndef FatReader_h
 #define FatReader_h
-#include "SdReader.h"
-#include "FatStructs.h"
+#include <SdReader.h>
+#include <FatStructs.h>
 
 // flags for ls()
 /** ls() flag to print modify date */

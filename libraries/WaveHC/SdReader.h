@@ -19,17 +19,24 @@
  */
 #ifndef SdReader_h
 #define SdReader_h
-#include "SdInfo.h"
+#include <SdInfo.h>
 /**
  * \file
  * SdReader class
  */
-
 /**
- * Default card init speed. Change to true for Wave Shield V1.0
+ * Some SD card are very sensitive to the SPI bus speed for initialization.
+ * Try setting SPI_INIT_SLOW nonzero if you have initialization problems.
+ *
+ * Set SPI_INIT_SLOW nonzero to reduce the SPI bus speed for SD initaizaton
+ * to F_CPU/128.  F_CPU/64 is used if
+ */
+#define SPI_INIT_SLOW 0
+/**
+ * Default card SPI speed. Change to true for Wave Shield V1.0
  * The SPI speed is 4 Mhz for 'true' and 8 Mhz for 'false'.
  */
-#define SD_INIT_DEFAULT false
+#define SPI_DEFAULT_HALF_SPEED false
 
 /** read timeout ms */
 #define SD_READ_TIMEOUT    300
@@ -97,7 +104,7 @@ public:
   uint8_t errorCode(void) {return errorCode_;}
   /** \return error data for last error */
   uint8_t errorData(void) {return errorData_;}
-  uint8_t init(uint8_t slow = SD_INIT_DEFAULT);
+  uint8_t init(uint8_t slow = SPI_DEFAULT_HALF_SPEED);
   /**
    * Enable or disable partial block reads.
    * 

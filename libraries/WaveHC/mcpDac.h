@@ -44,8 +44,7 @@
 
 //------------------------------------------------------------------------------
 // init dac I/O ports
-inline void mcpDacInit(void)
-{
+inline void mcpDacInit(void) {
   // set all to output mode
   MCP_DAC_CS_DDR |= _BV(MCP_DAC_CS_BIT);
   MCP_DAC_SCK_DDR |= _BV(MCP_DAC_SCK_BIT);
@@ -63,8 +62,7 @@ inline void mcpDacInit(void)
 // send 12 bits to dac
 // trusted compiler to optimize and it does 
 // csLow to csHigh takes 8 - 9 usec on a 16 MHz Arduino
-inline void mcpDacSend(uint16_t data)
-{
+inline void mcpDacSend(uint16_t data) {
   mcpDacCsLow();
   // send DAC config bits
   mcpDacSdiLow();

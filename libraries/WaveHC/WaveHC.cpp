@@ -12,9 +12,9 @@
 */
 #include <string.h>
 #include <avr/interrupt.h>
-#include "mcpDac.h"
-#include "WaveHC.h"
-#include "WaveUtil.h"
+#include <mcpDac.h>
+#include <WaveHC.h>
+#include <WaveUtil.h>
 
 // verify program assumptions
 #if PLAYBUFFLEN != 256 && PLAYBUFFLEN != 512
@@ -161,8 +161,7 @@ WaveHC::WaveHC(void) {
  * for failure include I/O error, an invalid wave file or a wave
  *  file with features that WaveHC does not support.
  */
-uint8_t WaveHC::create(FatReader &f)
-{
+uint8_t WaveHC::create(FatReader &f) {
   // 18 byte buffer
   // can use this since Arduino and RIFF are Little Endian
   union {
@@ -268,8 +267,7 @@ uint8_t WaveHC::create(FatReader &f)
 /**
  * Returns true if the player is paused else false.
  */
-uint8_t WaveHC::isPaused(void)
-{
+uint8_t WaveHC::isPaused(void) {
   cli();
   uint8_t rtn = isplaying && !(TIMSK1 & _BV(OCIE1A));
   sei();
@@ -279,8 +277,7 @@ uint8_t WaveHC::isPaused(void)
 /**
  * Pause the player.
  */
-void WaveHC::pause(void)
-{
+void WaveHC::pause(void) {
   cli();
   TIMSK1 &= ~_BV(OCIE1A); //disable DAC interrupt
   sei();
@@ -374,8 +371,7 @@ int16_t WaveHC::readWaveData(uint8_t *buff, uint16_t len) {
 }
 //------------------------------------------------------------------------------
 /** Resume a paused player. */
-void WaveHC::resume(void)
-{
+void WaveHC::resume(void) {
   cli();
   // enable DAC interrupt
   if(isplaying) TIMSK1 |= _BV(OCIE1A);
@@ -388,8 +384,7 @@ void WaveHC::resume(void)
  * \param[in] pos seek will attempt to position the file near \a pos.
  * \a pos is the byte number from the beginning of file.
  */
-void WaveHC::seek(uint32_t pos)
-{
+void WaveHC::seek(uint32_t pos) {
   // make sure buffer fill interrupt doesn't happen
   cli();
   if (fd) {
@@ -411,8 +406,7 @@ void WaveHC::seek(uint32_t pos)
  * \param[in] samplerate The new sample rate in samples per second.
  * No checks are done on the input parameter.
  */
-void WaveHC::setSampleRate(uint32_t samplerate) 
-{
+void WaveHC::setSampleRate(uint32_t samplerate) {
   if (samplerate < 500) samplerate = 500;
   if (samplerate > 50000) samplerate = 50000;
   // from ladayada's library.

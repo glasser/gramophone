@@ -1,11 +1,13 @@
 
-#include "WProgram.h"
-#include "WaveUtil.h"
-
+#if ARDUINO < 100
+#include <WProgram.h>
+#else  // ARDUINO
+#include <Arduino.h>
+#endif  // ARDUINO
+#include <WaveUtil.h>
 //------------------------------------------------------------------------------
 /** Return the number of bytes currently free in RAM. */
-int FreeRam(void)
-{
+int FreeRam(void) {
   extern int  __bss_end;
   extern int  *__brkval;
   int free_memory;
@@ -25,9 +27,8 @@ int FreeRam(void)
  *
  * \param[in] str Pointer to string stored in flash memory.
  */
-void SerialPrint_P(PGM_P str)
-{
-  for (uint8_t c; (c = pgm_read_byte(str)); str++) Serial.print(c);
+void SerialPrint_P(PGM_P str) {
+  for (uint8_t c; (c = pgm_read_byte(str)); str++) Serial.write(c);
 }
 //------------------------------------------------------------------------------
 /**
@@ -35,8 +36,7 @@ void SerialPrint_P(PGM_P str)
  *
  * \param[in] str Pointer to string stored in flash memory.
  */
-void SerialPrintln_P(PGM_P str)
-{
+void SerialPrintln_P(PGM_P str) {
   SerialPrint_P(str);
   Serial.println();
 }

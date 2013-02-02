@@ -390,5 +390,4 @@ typedef struct directoryEntry dir_t;
             (((dir).attributes & DIR_ATT_FILE_TYPE_MASK) == DIR_ATT_DIRECTORY)
         /** Directory entry is for a file or subdirectory */
 #define DIR_IS_FILE_OR_SUBDIR(dir) (((dir).attributes & DIR_ATT_VOLUME_ID) == 0)
-
 #endif //FatStructs_h
