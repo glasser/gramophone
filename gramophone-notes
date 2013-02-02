@@ -29,3 +29,8 @@ sampleRate = 00005622 = 22050
 bytepersecond = 00005622 = 22050
 blockalign = 1
 bitspersample = 8
+
+
+- need to set my sketchbook location to be the main 'gramophone' folder,
+  otherwise it can't find libraries
+
