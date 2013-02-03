@@ -177,19 +177,24 @@ void playinteractive() {
     /*   Serial.println(period, DEC); */
     /* } */
     if (cur_spinning) {
-      if (period < 2100) {
-        cur_rate = 22050;  // This is the "normal" rate of the song.
-      } else if (period < 2500) {
-        cur_rate = 21000;
-      } else if (period < 3000) {
-        cur_rate = 20000;
-      } else if (period < 4000) {
-        cur_rate = 19000;
-      } else if (period < 6000) {
-        cur_rate = 18000;
+      if (period < 3000) {
+        cur_rate = 22050;
       } else {
-        cur_rate = 17000;
+        cur_rate = 18000;
       }
+      /* if (period < 2100) { */
+      /*   cur_rate = 22050;  // This is the "normal" rate of the song. */
+      /* } else if (period < 2500) { */
+      /*   cur_rate = 21000; */
+      /* } else if (period < 3000) { */
+      /*   cur_rate = 20000; */
+      /* } else if (period < 4000) { */
+      /*   cur_rate = 19000; */
+      /* } else if (period < 6000) { */
+      /*   cur_rate = 18000; */
+      /* } else { */
+      /*   cur_rate = 17000; */
+      /* } */
 
       if (cur_rate != prev_rate) {
         putstring("Rate: ");
